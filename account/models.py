@@ -59,3 +59,4 @@ class User(AbstractBaseUser):
                   'test@gmail.com',
                   [email, ]
                   )
+

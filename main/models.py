@@ -87,3 +87,10 @@ class Likes(models.Model):
     is_liked = models.BooleanField(default=False)
 
 
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorites')
+    favorite = models.BooleanField(default=False)
+
+
+
