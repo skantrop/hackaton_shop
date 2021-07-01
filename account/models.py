@@ -1,6 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.core.mail import send_mail
 from django.db import models
+
 
 
 class UserManager(BaseUserManager):
@@ -60,3 +62,23 @@ class User(AbstractBaseUser):
                   [email, ]
                   )
 
+User = get_user_model()
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    email = models.EmailField(max_length=100, unique=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    image = models.ImageField(upload_to='images/', default='media/profile_pic.png')
+    country = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def __str__(self):
+        return f'{self.user.email}'
+
+    def save(self, *args, **kwargs):
+        to_slug = str(self.user.first_name)
+        self.slug = to_slug
+        super().save(*args, **kwargs)

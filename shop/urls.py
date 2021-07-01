@@ -22,12 +22,13 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import SimpleRouter
-from main.views import ReviewViewSet, ProductViewSet, OrderViewSet, FavoriteListView
+from main.views import ReviewViewSet, ProductViewSet, FavoriteView, CartViewSet
 
 router = SimpleRouter()
 router.register('products', ProductViewSet)
 router.register('reviews', ReviewViewSet)
-router.register('orders', OrderViewSet)
+router.register('cart', CartViewSet)
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -43,7 +44,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
     path('api/v1/', include('account.urls')),
-    path('api/v1/favorites/', FavoriteListView.as_view()),
+    path('api/v1/favorites/', FavoriteView.as_view()),
     path('api/v1/docs/', schema_view.with_ui('swagger')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

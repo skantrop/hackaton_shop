@@ -1,17 +1,17 @@
-from django.db.models import Avg
+from django.db.models import Q
 import django_filters.rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework import viewsets, mixins, generics
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework import viewsets, mixins, status
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import ProductFilter
-from .models import Product, Review, Order, Likes, Favorite
+from .models import Product, Review, Likes, Favorite, Cart
 from .permissions import IsAuthororAdminPermission, DenyAll
 from .serializers import (ProductListSerializer,
-                          ProductDetailsSerializer, ReviewSerializer, OrderSerializer, FavoriteSerializer)
+                          ProductDetailsSerializer, ReviewSerializer, FavoriteListSerializer, CartSerializer)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -61,6 +61,30 @@ class ProductViewSet(viewsets.ModelViewSet):
             like_obj.save()
             return Response('liked')
 
+    @action(detail=True, methods=['POST'])
+    def favorites(self, request, pk):
+        product = self.get_object()
+        user = request.user
+        fav, created = Favorite.objects.get_or_create(product=product, user=user)
+        if fav.favorite:
+            fav.favorite = False
+            fav.save()
+            return Response('removed from favorites')
+        else:
+            fav.favorite = True
+            fav.save()
+            return Response('added to favorites')
+
+    @action(detail=False, methods=["GET"])
+    def search(self, request, pk=None):
+        q = request.query_params.get("q")  # request.query_params = request.GET
+        queryset = self.get_queryset()
+        queryset = queryset.filter(Q(title__icontains=q) |
+                                   Q(description__icontains=q))
+
+        serializer = ProductListSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ReviewViewSet(mixins.CreateModelMixin,
                     mixins.UpdateModelMixin,
@@ -75,9 +99,9 @@ class ReviewViewSet(mixins.CreateModelMixin,
         return [IsAuthororAdminPermission()]
 
 
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
 
     def get_permissions(self):
         if self.action in ['create', 'list', 'retrieve']:
@@ -94,11 +118,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class FavoriteListView(generics.ListAPIView):
+class FavoriteView(ListAPIView):
     queryset = Favorite.objects.all()
-    serializer_class = FavoriteSerializer
+    serializer_class = FavoriteListSerializer
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = Favorite.objects.filter(user=user, favorite=True)
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
         return queryset
+
+    def get_serializer_context(self):
+        return {'request': self.request}

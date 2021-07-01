@@ -5,7 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import RegisterSerializer, ActivationSerializer, LoginSerializer, ChangePasswordSerializer, \
-    CreateNewPasswordSerializer, ForgotPasswordSerializer
+    CreateNewPasswordSerializer, ForgotPasswordSerializer, ProfileSerializer
+from rest_framework import generics
+from .models import Profile
 
 
 class RegistrationView(APIView):
@@ -62,16 +64,20 @@ class ChangePasswordView(APIView):
             return Response('Password is changed successfully!', status=status.HTTP_200_OK)
 
 
-class UserProfileView(APIView):
-    pass
+class ProfileListView(generics.ListAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
-    def __str__(self):
-        return self.email
 
-    def save(self, *args, **kwargs):
-        to_slug = str(self.user.username)
-        self.slug = to_slug
-        super().save(*args, **kwargs)
+class ProfileDetailView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+
+class ProfileUpdateView(generics.UpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
 
 
 #TODO: Registration

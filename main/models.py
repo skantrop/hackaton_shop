@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
+from rest_framework.generics import ListAPIView
 
 User = get_user_model()
 
@@ -54,27 +54,42 @@ class StatusChoices(models.TextChoices):
     cancelled = ('cancelled', 'Cancelled')
 
 
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING,
-                             related_name='orders')
-    products = models.ManyToManyField(Product, through='OrderItems')
-    status = models.CharField(max_length=15, choices=StatusChoices.choices)
-    total_sum = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True)
+# class Order(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING,
+#                              related_name='orders')
+#     products = models.ManyToManyField(Product, through='OrderItems')
+#     status = models.CharField(max_length=15, choices=StatusChoices.choices)
+#     total_sum = models.DecimalField(max_digits=10, decimal_places=2)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     notes = models.TextField(blank=True)
+#
+#
+# class OrderItems(models.Model):
+#     order = models.ForeignKey(Order,
+#                               on_delete=models.DO_NOTHING,
+#                               related_name='items')
+#     product = models.ForeignKey(Product,
+#                                 on_delete=models.DO_NOTHING,
+#                                 related_name='order_items')
+#     quantity = models.PositiveSmallIntegerField(default=1)
+#
+#     class Meta:
+#         unique_together = ['order', 'product']
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
 
 
-class OrderItems(models.Model):
-    order = models.ForeignKey(Order,
-                              on_delete=models.DO_NOTHING,
-                              related_name='items')
-    product = models.ForeignKey(Product,
-                                on_delete=models.DO_NOTHING,
-                                related_name='order_items')
-    quantity = models.PositiveSmallIntegerField(default=1)
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cartitem')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cartitem')
+    amount = models.PositiveIntegerField(default=1)
 
-    class Meta:
-        unique_together = ['order', 'product']
+    def __str__(self):
+        return self.product.title
+
+    def get_total_price(self):
+        return self.product.price * self.amount
 
 
 class Likes(models.Model):
@@ -82,7 +97,7 @@ class Likes(models.Model):
                              on_delete=models.CASCADE,
                              related_name='likes')
     product = models.ForeignKey(Product,
-                                on_delete=models.CASCADE)
+                                on_delete=models.CASCADE, related_name='likes')
 
     is_liked = models.BooleanField(default=False)
 
@@ -91,6 +106,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorites')
     favorite = models.BooleanField(default=False)
+
 
 
 

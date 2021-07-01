@@ -2,6 +2,8 @@ from django.core.mail import send_mail
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 
+from account.models import Profile
+
 User = get_user_model()
 
 
@@ -141,3 +143,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(new_pass)
         user.save()
 
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = '__all__'
