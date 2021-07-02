@@ -79,6 +79,6 @@ class Profile(models.Model):
         return f'{self.user.email}'
 
     def save(self, *args, **kwargs):
-        to_slug = str(self.user.first_name)
-        self.slug = to_slug
+        slug_ = str(self.user.email)
+        self.slug = slug_
         super().save(*args, **kwargs)

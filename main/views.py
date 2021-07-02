@@ -29,23 +29,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]
-        elif self.action in ['create_review', 'like']:
+        elif self.action in ['create_review', 'like', 'favorites']:
             return [IsAuthenticated()]
         return []
 
-    # api/v1/products/id/create_review/
-    @action(detail=True, methods=['POST'])
-    def create_review(self, request, pk):
-        data = request.data.copy()
-        data['product'] = pk
-        serializer = ReviewSerializer(data=data, context={'request': request})
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        else:
-            return Response(serializer.errors, status=400)
-
+    # api/v1/products/products/id/like/
     @action(detail=True, methods=['POST'])
     def like(self, request, pk):
         product = self.get_object()
@@ -61,6 +49,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             like_obj.save()
             return Response('liked')
 
+    # api/v1/products/products/id/favorites/
     @action(detail=True, methods=['POST'])
     def favorites(self, request, pk):
         product = self.get_object()

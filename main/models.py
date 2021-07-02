@@ -47,34 +47,6 @@ class Review(models.Model):
         ordering = ('-created_at', )
 
 
-class StatusChoices(models.TextChoices):
-    new = ('new', 'New')
-    in_progress = ('in_progress', 'In progress')
-    done = ('done', 'Done')
-    cancelled = ('cancelled', 'Cancelled')
-
-
-# class Order(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING,
-#                              related_name='orders')
-#     products = models.ManyToManyField(Product, through='OrderItems')
-#     status = models.CharField(max_length=15, choices=StatusChoices.choices)
-#     total_sum = models.DecimalField(max_digits=10, decimal_places=2)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     notes = models.TextField(blank=True)
-#
-#
-# class OrderItems(models.Model):
-#     order = models.ForeignKey(Order,
-#                               on_delete=models.DO_NOTHING,
-#                               related_name='items')
-#     product = models.ForeignKey(Product,
-#                                 on_delete=models.DO_NOTHING,
-#                                 related_name='order_items')
-#     quantity = models.PositiveSmallIntegerField(default=1)
-#
-#     class Meta:
-#         unique_together = ['order', 'product']
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
